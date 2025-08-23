@@ -24,16 +24,18 @@ public class AppConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 
-        http.sessionManagement(management ->
-                management.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS
-                )).authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/**").authenticated()
-                .requestMatchers("/api/products/*/reviews").permitAll()
-                .anyRequest().permitAll())
+        http
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/auth/**").permitAll()       // Allow all /auth requests (signup, login, OTP)
+                        .requestMatchers("/api/products/*/reviews").permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
+                )
                 .addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
 
         return http.build();
     }

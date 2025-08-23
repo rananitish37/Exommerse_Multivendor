@@ -22,32 +22,48 @@ import java.util.List;
 public class JwtTokenValidator extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String jwt = request.getHeader("Authorization");
-        if (request.getRequestURI().startsWith("/auth/signup") || request.getRequestURI().startsWith("/auth/login")) {
-            // Skip JWT validation and let the request pass through
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+
+        // Skip JWT validation for these endpoints
+        if (path.startsWith("/auth/signup") || path.startsWith("/auth/login") || path.startsWith("/auth/sent/login-signup-otp")) {
             filterChain.doFilter(request, response);
+            return;
         }
-            if(jwt != null && jwt.startsWith("Bearer ")){
-            jwt = jwt.substring(7); //extract bearer(which comes under header)
-            try{
+
+        String jwt = request.getHeader("Authorization");
+
+        if (jwt != null && jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7); // remove 'Bearer ' prefix
+            try {
                 SecretKey key = Keys.hmacShaKeyFor(JWT_CONSTANT.SECRET_KEY.getBytes());
-                Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(key)
+                        .build()
+                        .parseClaimsJws(jwt)
+                        .getBody();
 
-                String email = String.valueOf(claims.get("emails"));
-
+                String email = String.valueOf(claims.get("email"));  // fix key to "email"
                 String authorities = String.valueOf(claims.get("authorities"));
-
                 List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
-                Authentication authentication = new UsernamePasswordAuthenticationToken(email,null,auths);
-
+                Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, auths);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }catch (Exception e){
-                throw new BadCredentialsException("Invalid JWT token");
-            }
 
-            filterChain.doFilter(request,response);
+            } catch (Exception e) {
+                // Invalidate authentication and respond with 401 Unauthorized
+                SecurityContextHolder.clearContext();
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+                return;
+            }
+        } else {
+            // No token provided, clear context for security
+            SecurityContextHolder.clearContext();
         }
+
+        filterChain.doFilter(request, response);
     }
+
 }

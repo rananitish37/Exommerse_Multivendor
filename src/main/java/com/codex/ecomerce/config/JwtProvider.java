@@ -39,7 +39,7 @@ public class JwtProvider {
         for(GrantedAuthority authority: authorities){
             auths.add(authority.getAuthority());
         }
-        return String.join(","+auths);
+        return String.join(",",auths);
     }
 
     public String getEmailFromJwtToken(String jwt){

@@ -3,8 +3,12 @@ package com.codex.ecomerce.controller;
 
 import com.codex.ecomerce.domain.USER_ROLE;
 import com.codex.ecomerce.model.User;
+import com.codex.ecomerce.model.VerificationCode;
 import com.codex.ecomerce.repository.UserRepository;
+import com.codex.ecomerce.request.LoginRequest;
+import com.codex.ecomerce.response.ApiResponse;
 import com.codex.ecomerce.response.AuthResponse;
+import com.codex.ecomerce.response.OtpRequest;
 import com.codex.ecomerce.response.SignupRequest;
 import com.codex.ecomerce.services.AuthService;
 import jakarta.validation.Valid;
@@ -29,7 +33,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody @Valid SignupRequest req) {
+    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody @Valid SignupRequest req) throws Exception {
         System.out.println("Signup request: " + req);
         String jwt = authService.createUser(req);
         AuthResponse response = new AuthResponse();
@@ -40,6 +44,19 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/sent/login-signup-otp")
+    public ResponseEntity<ApiResponse> sentOtpHandler(@RequestBody VerificationCode req) throws Exception {
+        authService.sentLoginOtp(req.getEmail());
+        ApiResponse response = new ApiResponse();
+        response.setMessage("Otp sent successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/signing")
+    public ResponseEntity<AuthResponse> loginhandler(@RequestBody LoginRequest req) throws Exception {
+        AuthResponse response = authService.siging(req);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/getUsers")  // better plural naming
     public ResponseEntity<List<User>> getUsers() {
