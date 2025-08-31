@@ -5,6 +5,7 @@ import com.codex.ecomerce.domain.USER_ROLE;
 import com.codex.ecomerce.model.User;
 import com.codex.ecomerce.model.VerificationCode;
 import com.codex.ecomerce.repository.UserRepository;
+import com.codex.ecomerce.request.LoginOptRequest;
 import com.codex.ecomerce.request.LoginRequest;
 import com.codex.ecomerce.response.ApiResponse;
 import com.codex.ecomerce.response.AuthResponse;
@@ -45,8 +46,8 @@ public class AuthController {
     }
 
     @PostMapping("/sent/login-signup-otp")
-    public ResponseEntity<ApiResponse> sentOtpHandler(@RequestBody VerificationCode req) throws Exception {
-        authService.sentLoginOtp(req.getEmail());
+    public ResponseEntity<ApiResponse> sentOtpHandler(@RequestBody LoginOptRequest req) throws Exception {
+        authService.sentLoginOtp(req.getEmail(),req.getRole());
         ApiResponse response = new ApiResponse();
         response.setMessage("Otp sent successfully");
         return ResponseEntity.ok(response);

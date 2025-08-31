@@ -3,9 +3,11 @@ package com.codex.ecomerce.services.impl;
 import com.codex.ecomerce.config.JwtProvider;
 import com.codex.ecomerce.domain.USER_ROLE;
 import com.codex.ecomerce.model.Cart;
+import com.codex.ecomerce.model.Seller;
 import com.codex.ecomerce.model.User;
 import com.codex.ecomerce.model.VerificationCode;
 import com.codex.ecomerce.repository.CartRepository;
+import com.codex.ecomerce.repository.SellerRepository;
 import com.codex.ecomerce.repository.UserRepository;
 import com.codex.ecomerce.repository.VerificationCodeRepository;
 import com.codex.ecomerce.request.LoginRequest;
@@ -13,6 +15,7 @@ import com.codex.ecomerce.response.AuthResponse;
 import com.codex.ecomerce.response.SignupRequest;
 import com.codex.ecomerce.services.AuthService;
 import com.codex.ecomerce.services.EmailService;
+import com.codex.ecomerce.services.SellerService;
 import com.codex.ecomerce.util.OtpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,10 +28,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -42,17 +44,25 @@ public class AuthServiceImpl implements AuthService {
     private final VerificationCodeRepository verificationCodeRepository;
     private final EmailService emailService;
     private final CustomUserServiceImpl customUserService;
+    private final SellerRepository sellerRepository;
 
     @Override
-    public void sentLoginOtp(String email) throws Exception {
-        String SIGNING_PREFIX="signin_";
+    public void sentLoginOtp(String email, USER_ROLE role) throws Exception {
+        String SIGNING_PREFIX="signing_";
         if(email.startsWith(SIGNING_PREFIX)){
             email=email.substring(SIGNING_PREFIX.length());
-
-            User user = userRepository.findByEmail(email);
-            if(user==null){
-                throw new Exception("user does not exist with provided email");
+            if(role.equals(USER_ROLE.ROLE_CUSTOMER)){
+                Optional<User> userOptional = Optional.ofNullable(userRepository.findByEmail(email));  // Changed this
+                if(userOptional.isEmpty()){
+                    throw new Exception("user does not exist with provided email");
+                }
+            } else {
+                Optional<Seller> sellerOptional = Optional.ofNullable(sellerRepository.findByEmail(email));  // Changed this
+                if(sellerOptional.isEmpty()){
+                    throw new Exception("seller does not exist with provided email");
+                }
             }
+
         }
         VerificationCode isExist = verificationCodeRepository.findByEmail(email);
         if(isExist!=null){
