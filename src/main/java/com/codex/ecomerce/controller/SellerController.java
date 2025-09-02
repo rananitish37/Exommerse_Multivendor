@@ -2,6 +2,7 @@ package com.codex.ecomerce.controller;
 
 import com.codex.ecomerce.config.JwtProvider;
 import com.codex.ecomerce.domain.AccountStatus;
+import com.codex.ecomerce.exceptions.SellerException;
 import com.codex.ecomerce.model.Seller;
 import com.codex.ecomerce.model.SellerReport;
 import com.codex.ecomerce.model.VerificationCode;
@@ -38,15 +39,16 @@ public class SellerController {
         String otp = req.getOtp();
 
         req.setEmail("seller_"+email);
+        req.setOtp(otp);
         AuthResponse authResponse = authService.siging(req);
         return ResponseEntity.ok(authResponse);
     }
 
-    @PostMapping("/verify/{otp}")
+    @PatchMapping("/verify/{otp}")
     public ResponseEntity<Seller> verifySellerEmail(@PathVariable String otp) throws Exception {
         VerificationCode  verificationCode = verificationCodeRepository.findByOtp(otp);
 
-        if(verificationCode != null || !verificationCode.getOtp().equals(otp)){
+        if((verificationCode == null) || !verificationCode.getOtp().equals(otp)){
             throw new Exception("wrong otp..");
         }
 
@@ -74,7 +76,7 @@ public class SellerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Seller> getSellerById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<Seller> getSellerById(@PathVariable Long id) throws SellerException {
         Seller seller = sellerService.getSellerById(id);
         return new ResponseEntity<>(seller, HttpStatus.OK);
     }
@@ -100,13 +102,10 @@ public class SellerController {
         return ResponseEntity.ok(sellers);
     }
 
-    @PutMapping()
-    public ResponseEntity<Seller> updateSeller(@RequestHeader("Authorization") String jwt,@RequestBody Seller seller) throws Exception {
-        if(this.getSellerById(seller.getId()) == null){
-            throw new Exception("Seller doesn't exist with this data..");
-        }
+    @PatchMapping()
+    public ResponseEntity<Seller> updateSeller(@RequestHeader("Authorization") String jwt, @RequestBody Seller seller) throws Exception {
         Seller profile = sellerService.getSellerProfile(jwt);
-        Seller updatedSeller = sellerService.updateSeller(seller.getId(),seller);
+        Seller updatedSeller = sellerService.updateSeller(profile.getId(),seller);
         return ResponseEntity.ok(updatedSeller);
 
     }

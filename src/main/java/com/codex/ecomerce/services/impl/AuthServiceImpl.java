@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -52,13 +51,14 @@ public class AuthServiceImpl implements AuthService {
         if(email.startsWith(SIGNING_PREFIX)){
             email=email.substring(SIGNING_PREFIX.length());
             if(role.equals(USER_ROLE.ROLE_CUSTOMER)){
-                Optional<User> userOptional = Optional.ofNullable(userRepository.findByEmail(email));  // Changed this
-                if(userOptional.isEmpty()){
+                User user = userRepository.findByEmail(email);
+                if(user==null){
                     throw new Exception("user does not exist with provided email");
                 }
-            } else {
-                Optional<Seller> sellerOptional = Optional.ofNullable(sellerRepository.findByEmail(email));  // Changed this
-                if(sellerOptional.isEmpty()){
+            }else{
+                System.out.println("in else....");
+                Seller seller = sellerRepository.findByEmail(email);
+                if(seller==null){
                     throw new Exception("seller does not exist with provided email");
                 }
             }
@@ -139,6 +139,11 @@ public class AuthServiceImpl implements AuthService {
 
     private Authentication authenticate(String username, String otp) {
         UserDetails userDetails = customUserService.loadUserByUsername(username);
+        String SELLER_PREFIX = "seller_";
+        if(username.startsWith(SELLER_PREFIX)){
+            username=username.substring(SELLER_PREFIX.length());
+        }
+
         if(userDetails==null){
             throw new BadCredentialsException("Invalid username");
         }

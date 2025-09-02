@@ -24,6 +24,7 @@ public class Seller {
 
     @Column(unique = true, nullable = false)
     private String email;
+
     private String password;
 
     @Embedded

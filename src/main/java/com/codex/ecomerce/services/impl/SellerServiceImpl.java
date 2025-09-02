@@ -3,6 +3,7 @@ package com.codex.ecomerce.services.impl;
 import com.codex.ecomerce.config.JwtProvider;
 import com.codex.ecomerce.domain.AccountStatus;
 import com.codex.ecomerce.domain.USER_ROLE;
+import com.codex.ecomerce.exceptions.SellerException;
 import com.codex.ecomerce.model.Address;
 import com.codex.ecomerce.model.Seller;
 import com.codex.ecomerce.repository.AddressRepository;
@@ -53,9 +54,9 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public Seller getSellerById(Long id) throws Exception {
+    public Seller getSellerById(Long id) throws SellerException {
         return sellerRepository.findById(id)
-                .orElseThrow(() -> new Exception("Seller not found with id"+ id));
+                .orElseThrow(() -> new SellerException("Seller not found with id"+ id));
     }
 
     @Override
@@ -69,6 +70,9 @@ public class SellerServiceImpl implements SellerService {
 
     @Override
     public List<Seller> getAllSeller(AccountStatus status) {
+        if (status == null) {
+            return sellerRepository.findAll();
+        }
         return sellerRepository.findByAccountStatus(status);
 
     }
