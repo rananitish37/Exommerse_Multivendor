@@ -8,7 +8,7 @@ import com.codex.ecomerce.model.Seller;
 import java.util.List;
 
 public interface SellerService {
-    Seller getSellerProfile(String jwt) throws Exception;
+    Seller getSellerProfile(String jwt) throws SellerException;
     Seller createSeller(Seller seller) throws Exception;
     Seller getSellerById(Long id) throws SellerException;
     Seller getSellerByEmail(String email) throws Exception;
