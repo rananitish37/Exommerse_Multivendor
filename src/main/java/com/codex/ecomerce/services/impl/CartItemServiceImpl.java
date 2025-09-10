@@ -14,7 +14,7 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     public CartItem updateCartItem(Long userId, Long id, CartItem cartItem) throws Exception {
-        CartItem item=findCartItemById(userId);
+        CartItem item=findCartItemById(id);
         User cartItemUser=item.getCart().getUser();
 
         if(cartItemUser.getId().equals(userId)){
@@ -30,7 +30,7 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     public void removeCartItem(Long userId, Long cartItemId) throws Exception {
-        CartItem item=findCartItemById(userId);
+        CartItem item=findCartItemById(cartItemId);
         User cartItemUser=item.getCart().getUser();
 
         if(cartItemUser.getId().equals(userId)){

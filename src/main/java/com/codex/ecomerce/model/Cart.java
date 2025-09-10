@@ -22,8 +22,11 @@ public class Cart {
     @OneToOne
     private User user; //To relate it that for which user this cart is
 
-    @ManyToMany
+//    @OneToMany
+//    private Set<CartItem> cartItem = new HashSet<>();
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItem> cartItem = new HashSet<>();
+
 
     private double totalSellingPrice;
     private int totalItem;
