@@ -4,10 +4,7 @@ import com.codex.ecomerce.domain.PaymentMethod;
 import com.codex.ecomerce.exceptions.SellerException;
 import com.codex.ecomerce.model.*;
 import com.codex.ecomerce.response.PaymentLinkResponse;
-import com.codex.ecomerce.services.CartService;
-import com.codex.ecomerce.services.OrderService;
-import com.codex.ecomerce.services.SellerService;
-import com.codex.ecomerce.services.UserService;
+import com.codex.ecomerce.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +21,7 @@ public class OrderController {
     private final UserService userService;
     private final CartService cartService;
     private final SellerService sellerService;
-    private final
+    private final SellerReportService sellerReportService;
 
     @PostMapping()
     public ResponseEntity<PaymentLinkResponse> craeteOrderHandler(
@@ -83,8 +80,12 @@ public class OrderController {
         User user = userService.findUserFromToken(jwt);
         Order order = orderService.cancelOrder(orderId, user);
 
-//        Seller seller = sellerService.getSellerById(order.getSellerId());
-//        SellerReport report = se
+        Seller seller = sellerService.getSellerById(order.getSellerId());
+        SellerReport report = sellerReportService.getSellerReport(seller);
+
+        report.setCanceledOrders(report.getCanceledOrders()+1);
+        report.setTotalRefund(report.getTotalRefund()+order.getTotalSellingPrice());
+        sellerReportService.updateSellerReport(report);
 
         return ResponseEntity.ok(order);
     }

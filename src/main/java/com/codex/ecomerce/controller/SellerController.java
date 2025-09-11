@@ -11,6 +11,7 @@ import com.codex.ecomerce.request.LoginRequest;
 import com.codex.ecomerce.response.AuthResponse;
 import com.codex.ecomerce.services.AuthService;
 import com.codex.ecomerce.services.EmailService;
+import com.codex.ecomerce.services.SellerReportService;
 import com.codex.ecomerce.services.SellerService;
 import com.codex.ecomerce.util.OtpUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class SellerController {
     private final AuthService authService;
     private final EmailService emailService;
     private final JwtProvider jwtProvider;
+    private final SellerReportService sellerReportService;
 
 
     @PostMapping("/login")
@@ -88,12 +90,13 @@ public class SellerController {
         return new ResponseEntity<>(seller, HttpStatus.OK);
     }
 
-//    @GetMapping("/report")
-//    public ResponseEntity<SellerReport> getSellerReport(@RequestHeader("authorization") String jwt){
-//        String email = jwtProvider.getEmailFromJwtToken(jwt);
-//        Seller seller = sellerService.getSellerByEmail(email);
-//        SellerReport sellerReport = seller
-//    }
+    @GetMapping("/report")
+    public ResponseEntity<SellerReport> getSellerReport(@RequestHeader("authorization") String jwt) throws Exception {
+
+        Seller seller = sellerService.getSellerProfile(jwt);
+        SellerReport sellerReport = sellerReportService.getSellerReport(seller);
+        return new ResponseEntity<>(sellerReport,HttpStatus.OK);
+    }
 
     @GetMapping
     public ResponseEntity<List<Seller>> getAllSellers(@RequestParam(required = false)AccountStatus status){
